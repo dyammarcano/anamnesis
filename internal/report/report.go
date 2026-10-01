@@ -10,22 +10,33 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"anamnesis/internal/correlate"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/correlate"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
-const (
-	// AppVersion is the Anamnesis version stamped into every report.
-	AppVersion = "0.1.0-dev"
-	// SchemaVersion versions the report.json layout.
-	SchemaVersion = "1"
-)
+// AppVersion is the Anamnesis version stamped into every report. Release builds set it with
+// -ldflags "-X github.com/dyammarcano/anamnesis/internal/report.AppVersion=v0.1.0"; a binary from
+// `go install ...@vX.Y.Z` takes the module version from its build info; otherwise it stays "dev".
+var AppVersion = "dev"
+
+// SchemaVersion versions the report.json layout.
+const SchemaVersion = "1"
+
+func init() {
+	if AppVersion != "dev" {
+		return
+	}
+	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
+		AppVersion = bi.Main.Version
+	}
+}
 
 // Meta is what the caller knows about one run of one project.
 type Meta struct {

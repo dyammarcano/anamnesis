@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 // ConsolidatedRow is one project in the cross-project table.

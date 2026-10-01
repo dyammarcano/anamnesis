@@ -5,9 +5,9 @@ package main
 import (
 	"os"
 
-	"anamnesis/internal/cli"
-	"anamnesis/internal/tui"
-	"anamnesis/internal/winpath"
+	"github.com/dyammarcano/anamnesis/internal/cli"
+	"github.com/dyammarcano/anamnesis/internal/tui"
+	"github.com/dyammarcano/anamnesis/internal/winpath"
 )
 
 func main() {

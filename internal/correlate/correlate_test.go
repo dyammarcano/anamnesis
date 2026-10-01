@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"anamnesis/internal/correlate"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/correlate"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 func ev(id, kind, subject string, vals map[string]string) model.Evidence {

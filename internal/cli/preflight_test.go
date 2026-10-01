@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"anamnesis/internal/config"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/workspace"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/workspace"
 )
 
 // writeLegacyJar creates a jar holding one class file whose header says Java 6 (major 50). It is

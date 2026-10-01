@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"anamnesis/internal/model"
-	"anamnesis/internal/redact"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/redact"
 )
 
 // Facts is what the caller knows about the build attempt besides the log.

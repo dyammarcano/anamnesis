@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"anamnesis/internal/ant"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/ant"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 const (

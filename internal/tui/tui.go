@@ -15,11 +15,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"anamnesis/internal/cli"
-	"anamnesis/internal/config"
-	"anamnesis/internal/discovery"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/cli"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/discovery"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 const (

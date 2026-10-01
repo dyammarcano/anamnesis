@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 // treeDigest hashes a directory tree: fileDigest is computed exactly like the repository's

@@ -1,4 +1,4 @@
-module anamnesis
+module github.com/dyammarcano/anamnesis
 
 go 1.26.0
 

@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"anamnesis/internal/discovery"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/discovery"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 // Workspace is one Anamnesis invocation's output root and run id.

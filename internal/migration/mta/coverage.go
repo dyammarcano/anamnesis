@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 // Rule classes by the provider capabilities their `when` clause uses.

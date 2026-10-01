@@ -3,7 +3,7 @@ package ant_test
 import (
 	"testing"
 
-	"anamnesis/internal/ant"
+	"github.com/dyammarcano/anamnesis/internal/ant"
 )
 
 // Regressions found by the independent review of the EJBCA validation (docs/validation/ejbca-4.0.16.md).

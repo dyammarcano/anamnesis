@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/buildrun"
-	"anamnesis/internal/config"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/proc"
+	"github.com/dyammarcano/anamnesis/internal/buildrun"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/proc"
 )
 
 // Run states for KindMTARun Values["state"].

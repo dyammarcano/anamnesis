@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/workspace"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/workspace"
 )
 
 func TestNewRefusesOutputInsideProject(t *testing.T) {

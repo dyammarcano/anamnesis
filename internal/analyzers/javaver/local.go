@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/proc"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/proc"
 )
 
 const notProject = " This is the local environment, not the project's Java version."

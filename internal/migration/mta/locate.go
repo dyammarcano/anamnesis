@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/config"
 )
 
 // Install describes an existing MTA installation. Anamnesis only reads it, never creates or alters it.

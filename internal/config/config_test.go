@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/config"
 )
 
 func writeParams(t *testing.T, dir, content string) string {

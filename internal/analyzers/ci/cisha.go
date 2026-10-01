@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/discovery"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/proc"
-	"anamnesis/internal/redact"
+	"github.com/dyammarcano/anamnesis/internal/discovery"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/proc"
+	"github.com/dyammarcano/anamnesis/internal/redact"
 )
 
 // States of KindCISameSHA.

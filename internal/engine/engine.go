@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"anamnesis/internal/config"
-	"anamnesis/internal/discovery"
-	"anamnesis/internal/model"
-	"anamnesis/internal/scan"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/discovery"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/scan"
 )
 
 // Phase orders analyzers: Preflight is fast and never executes repository-controlled code; Deep may

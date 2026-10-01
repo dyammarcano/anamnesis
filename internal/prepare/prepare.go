@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/config"
-	"anamnesis/internal/model"
-	"anamnesis/internal/proc"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/proc"
 )
 
 const analyzerName = "prepare"

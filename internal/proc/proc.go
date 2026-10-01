@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 const tailBytes = 64 * 1024

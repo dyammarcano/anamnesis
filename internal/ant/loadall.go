@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/scan"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/scan"
 )
 
 // LoadError records a build file that could not be parsed at all.

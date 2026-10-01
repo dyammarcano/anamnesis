@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"anamnesis/internal/analyzers/antfacts"
-	"anamnesis/internal/ant"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/analyzers/antfacts"
+	"github.com/dyammarcano/anamnesis/internal/ant"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 // writeTree creates the files (slash-separated relative paths) under a fresh temp dir.

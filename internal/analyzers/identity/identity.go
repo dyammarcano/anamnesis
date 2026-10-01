@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 const maxLocations = 50

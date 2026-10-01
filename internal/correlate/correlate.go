@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 func rank(c model.Confidence) int {

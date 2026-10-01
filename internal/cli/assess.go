@@ -12,18 +12,18 @@ import (
 	"sync"
 	"time"
 
-	"anamnesis/internal/config"
-	"anamnesis/internal/correlate"
-	"anamnesis/internal/discovery"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/prepare"
-	"anamnesis/internal/report"
-	"anamnesis/internal/workspace"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/correlate"
+	"github.com/dyammarcano/anamnesis/internal/discovery"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/prepare"
+	"github.com/dyammarcano/anamnesis/internal/report"
+	"github.com/dyammarcano/anamnesis/internal/workspace"
 )
 
 // Version is the Anamnesis version.
-const Version = report.AppVersion
+var Version = report.AppVersion
 
 var registerOnce sync.Once
 

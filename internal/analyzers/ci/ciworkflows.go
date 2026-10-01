@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/redact"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/redact"
 )
 
 // Analyzers returns ciworkflows and cisha.

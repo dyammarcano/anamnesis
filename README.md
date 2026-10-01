@@ -1,5 +1,5 @@
 # Anamnesis
-<!-- rev:004 (RFC 3339) 2026-10-01T18:33:16Z -->
+<!-- rev:005 (RFC 3339) 2026-10-01T18:40:58Z -->
 
 One Windows executable that assesses local legacy Java repositories (Ant, Maven, Gradle, Eclipse/NetBeans,
 hand-managed JARs) and writes an evidence-backed modernization report. Every conclusion carries the
@@ -22,9 +22,49 @@ all output goes to a directory outside them.
   - a JDK 11+ for `jdeps`/`jdeprscan`;
   - an extracted MTA (Migration Toolkit for Applications) distribution.
 
-## Build
+## Install
+
+### Releases (Windows, no Go needed)
+
+Prebuilt binaries are published on the
+[Releases page](https://github.com/dyammarcano/anamnesis/releases/latest).
+
+1. Download `anamnesis_<version>_windows_amd64.zip` and `checksums.txt` from the latest release.
+2. Verify the download. The hash must match the zip's line in `checksums.txt`:
+
+   ```powershell
+   (Get-FileHash .\anamnesis_v0.1.0_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
+   ```
+
+3. Extract it. The zip contains `anamnesis.exe`, `parameters.example.yaml`, `README.md` and `LICENSE`.
+4. Copy `parameters.example.yaml` to `parameters.yaml` next to `anamnesis.exe` and edit it
+   (see [Configure](#configure)).
+
+Every release lists its changes on the Releases page. The version is printed by
+`anamnesis.exe version` and stamped into every `report.json`.
+
+### With Go
+
+Requires Go 1.26 or newer:
 
 ```
+go install github.com/dyammarcano/anamnesis@latest
+```
+
+To pin a release:
+
+```
+go install github.com/dyammarcano/anamnesis@v0.1.0
+```
+
+The binary is installed as `anamnesis.exe` in `%USERPROFILE%\go\bin` (or `$GOBIN`); make sure that
+directory is on your `PATH`. A binary installed this way reports the module version it was built from.
+
+### From source
+
+```
+git clone https://github.com/dyammarcano/anamnesis.git
+cd anamnesis
 go build -o anamnesis.exe .
 ```
 

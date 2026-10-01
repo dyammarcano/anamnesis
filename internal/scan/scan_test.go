@@ -9,7 +9,7 @@ import (
 	"testing"
 	"testing/iotest"
 
-	"anamnesis/internal/scan"
+	"github.com/dyammarcano/anamnesis/internal/scan"
 )
 
 func write(t *testing.T, root, rel, content string) {

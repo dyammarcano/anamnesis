@@ -14,21 +14,21 @@ import (
 	"path/filepath"
 	"strings"
 
-	"anamnesis/internal/config"
-	"anamnesis/internal/correlate"
-	"anamnesis/internal/discovery"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/report"
-	"anamnesis/internal/workspace"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/correlate"
+	"github.com/dyammarcano/anamnesis/internal/discovery"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/report"
+	"github.com/dyammarcano/anamnesis/internal/workspace"
 )
 
-const usage = `Anamnesis ` + Version + ` - assess legacy Java repositories
+var usage = `Anamnesis ` + Version + ` - assess legacy Java repositories
 
 Usage:
   anamnesis                         interactive TUI
   anamnesis preflight [path...]     Preflight phase only (never runs project code, never installs)
   anamnesis analyze   [path...]     Preflight, environment preparation, then Deep phase
-  anamnesis report <run-dir>        re-render report.json/.txt/.html from evidence.jsonl
+  anamnesis report <run-dir>        re-render report.json and report.html from evidence.jsonl
   anamnesis discover [parent...]    list candidate repositories under a parent folder
 
 Options (preflight, analyze):

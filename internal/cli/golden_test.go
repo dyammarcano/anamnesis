@@ -11,9 +11,9 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"anamnesis/internal/config"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/config"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
 )
 
 const goldenID = "ejbca-4.0.16"

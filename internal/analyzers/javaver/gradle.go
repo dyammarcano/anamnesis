@@ -4,9 +4,9 @@ import (
 	"regexp"
 	"strings"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/scan"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/scan"
 )
 
 var (

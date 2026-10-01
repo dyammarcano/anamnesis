@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"anamnesis/internal/scan"
+	"github.com/dyammarcano/anamnesis/internal/scan"
 )
 
 // archive is what the central directory (plus three small entries) of one jar/war/ear says.

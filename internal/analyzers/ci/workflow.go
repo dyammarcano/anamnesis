@@ -13,7 +13,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/engine"
 )
 
 // Purpose of a workflow, inferred from its steps.

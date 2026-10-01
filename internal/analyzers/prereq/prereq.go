@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/proc"
-	"anamnesis/internal/scan"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/proc"
+	"github.com/dyammarcano/anamnesis/internal/scan"
 )
 
 const maxLocations = 50

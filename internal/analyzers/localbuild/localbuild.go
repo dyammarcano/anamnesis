@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"anamnesis/internal/buildrun"
-	"anamnesis/internal/engine"
-	"anamnesis/internal/model"
-	"anamnesis/internal/proc"
-	"anamnesis/internal/redact"
+	"github.com/dyammarcano/anamnesis/internal/buildrun"
+	"github.com/dyammarcano/anamnesis/internal/engine"
+	"github.com/dyammarcano/anamnesis/internal/model"
+	"github.com/dyammarcano/anamnesis/internal/proc"
+	"github.com/dyammarcano/anamnesis/internal/redact"
 )
 
 // AntTargetChooser is set by integration code. It returns the build file (repo-relative, slash
