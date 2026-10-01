@@ -430,7 +430,8 @@ func (m *model_) updateInput(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeySpace:
 		m.input += " "
 	case tea.KeyRunes:
-		m.input += strings.NewReplacer("\r", "", "\n", "").Replace(string(k.Runes))
+		// A pasted list of paths arrives with line breaks; keep them as separators.
+		m.input += strings.NewReplacer("\r\n", ";", "\r", ";", "\n", ";").Replace(string(k.Runes))
 	}
 	return m, nil
 }
@@ -450,19 +451,42 @@ func (m *model_) submitInput(text string) {
 	}
 	switch m.inputKind {
 	case inputPath:
-		c, err := discovery.Canonical(text) // strips pasted quotes
-		if err != nil {
-			m.msg = styErr.Render("Cannot add: " + err.Error())
-			return
+		// One or many paths: separated by ";" or by line breaks (a pasted list). Windows paths cannot
+		// contain ";", so it is a safe separator.
+		var added, dup int
+		var bad []string
+		for _, part := range strings.Split(text, ";") {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+			c, err := discovery.Canonical(part) // strips pasted quotes
+			if err != nil {
+				bad = append(bad, part+" ("+err.Error()+")")
+				continue
+			}
+			if m.has(c) {
+				dup++
+				continue
+			}
+			m.params.Projects = append(m.params.Projects, config.Project{Path: c})
+			added++
 		}
-		if m.has(c) {
-			m.msg = "Already in the list: " + c
-			return
+		if added > 0 {
+			m.cursor = len(m.params.Projects) - 1
+			m.save()
 		}
-		m.params.Projects = append(m.params.Projects, config.Project{Path: c})
-		m.cursor = len(m.params.Projects) - 1
-		m.save()
-		m.msg = "Added " + c
+		parts := []string{fmt.Sprintf("Added %d project(s).", added)}
+		if dup > 0 {
+			parts = append(parts, fmt.Sprintf("%d already in the list.", dup))
+		}
+		if len(bad) > 0 {
+			parts = append(parts, styErr.Render("Not added: "+strings.Join(bad, "; ")))
+		}
+		if added > 0 {
+			parts = append(parts, "Press D to analyze the checked projects (P for a quick preflight).")
+		}
+		m.msg = strings.Join(parts, " ")
 	case inputFolder:
 		cands, err := discovery.Candidates(text)
 		if err != nil {
@@ -647,25 +671,74 @@ func (m *model_) View() string {
 	if m.mode == modeInspect {
 		return m.viewInspect()
 	}
+	// Every line is fitted to the terminal width and the body height is computed from what the header
+	// and footer actually use; a line that wraps pushes the input prompt off the bottom of the screen.
 	var b strings.Builder
-	b.WriteString(styTitle.Render("ANAMNESIS "+cli.Version) + "  " + styDim.Render("parameters: "+m.params.Path) + "\n")
-	leftW := max(m.w*46/100, 44)
-	rightW := max(m.w-leftW-4, 30)
-	bodyH := max(m.h-8, 8)
+	title := styTitle.Render("ANAMNESIS " + cli.Version)
+	b.WriteString(title + styDim.Render(fitTail("  parameters: "+m.params.Path, m.w-lipgloss.Width(title))) + "\n")
+
+	footer := wrapHints([]string{
+		"A add project path(s)", "F find repos in a folder", "X remove", "Space on/off",
+		"P preflight", "D analyze", "R open report", "E consolidated", "T rerun failed", "I inspect", "Q quit",
+	}, m.w)
+	leftW := max(m.w*46/100, 30)
+	rightW := max(m.w-leftW-4, 20)
+	bodyH := max(m.h-4-len(footer)-1, 4) // header + pane borders(2) + prompt/message + footer
 	left := styPane.Width(leftW).Height(bodyH).Render(m.viewList(leftW, bodyH))
 	right := styPane.Width(rightW).Height(bodyH).Render(m.viewDetail(rightW, bodyH))
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, left, right) + "\n")
 	if m.mode == modeInput {
-		label := "Add path"
+		label := "Project path(s), one per line or separated by ; : "
+		hint := "  Enter add, Esc cancel"
 		if m.inputKind == inputFolder {
-			label = "Add folder (scans for repositories)"
+			label = "Folder to search for repositories: "
 		}
-		b.WriteString(styHead.Render(label+": ") + m.input + "▏  " + styDim.Render("Enter accept, Esc cancel, paste allowed, quotes stripped") + "\n")
+		room := m.w - lipgloss.Width(label) - lipgloss.Width(hint) - 1
+		if room < 10 {
+			hint, room = "", m.w-lipgloss.Width(label)-1
+		}
+		b.WriteString(styHead.Render(label) + fitTail(m.input, room) + "▏" + styDim.Render(hint) + "\n")
 	} else {
-		b.WriteString(m.msg + "\n")
+		b.WriteString(lipgloss.NewStyle().MaxWidth(m.w).Render(m.msg) + "\n")
 	}
-	b.WriteString(styDim.Render("A add path  F add folder  X remove  Space enable  P preflight  D deep  R open report  E export consolidated  T rerun failed  I inspect  Q quit"))
+	b.WriteString(styDim.Render(strings.Join(footer, "\n")))
 	return b.String()
+}
+
+// wrapHints lays key hints out on as many lines as the width needs.
+func wrapHints(hints []string, w int) []string {
+	var lines []string
+	cur := ""
+	for _, h := range hints {
+		switch {
+		case cur == "":
+			cur = h
+		case len([]rune(cur))+2+len([]rune(h)) <= w:
+			cur += "  " + h
+		default:
+			lines = append(lines, cur)
+			cur = h
+		}
+	}
+	if cur != "" {
+		lines = append(lines, cur)
+	}
+	return lines
+}
+
+// fitTail keeps the end of s (the useful part of a path or of what is being typed) within w cells.
+func fitTail(s string, w int) string {
+	r := []rune(s)
+	if w <= 0 {
+		return ""
+	}
+	if len(r) <= w {
+		return s
+	}
+	if w == 1 {
+		return "…"
+	}
+	return "…" + string(r[len(r)-(w-1):])
 }
 
 func (m *model_) viewList(w, h int) string {

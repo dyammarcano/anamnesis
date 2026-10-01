@@ -1,5 +1,5 @@
 # Anamnesis
-<!-- rev:005 (RFC 3339) 2026-10-01T18:40:58Z -->
+<!-- rev:006 (RFC 3339) 2026-10-01T19:08:19Z -->
 
 One Windows executable that assesses local legacy Java repositories (Ant, Maven, Gradle, Eclipse/NetBeans,
 hand-managed JARs) and writes an evidence-backed modernization report. Every conclusion carries the
@@ -33,7 +33,7 @@ Prebuilt binaries are published on the
 2. Verify the download. The hash must match the zip's line in `checksums.txt`:
 
    ```powershell
-   (Get-FileHash .\anamnesis_v0.1.0_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
+   (Get-FileHash .\anamnesis_v0.1.1_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
    ```
 
 3. Extract it. The zip contains `anamnesis.exe`, `parameters.example.yaml`, `README.md` and `LICENSE`.
@@ -54,7 +54,7 @@ go install github.com/dyammarcano/anamnesis@latest
 To pin a release:
 
 ```
-go install github.com/dyammarcano/anamnesis@v0.1.0
+go install github.com/dyammarcano/anamnesis@v0.1.1
 ```
 
 The binary is installed as `anamnesis.exe` in `%USERPROFILE%\go\bin` (or `$GOBIN`); make sure that
@@ -83,6 +83,28 @@ and set:
 - `build.allow`, `mta.allow`, `network.allow`: side effects. All are off unless enabled.
   Builds and MTA always run on a staged copy, never in the repository.
 - `mta.install_dir`: an extracted MTA distribution (contains `rulesets/`, `jdtls/`, `static-report/`).
+
+## Assess several projects
+
+**In the TUI** (`anamnesis.exe` with no arguments):
+
+1. Press **A** and paste or type the project folders, one per line or separated by `;`, for example
+   `C:\repos\billing; C:\repos\orders; C:\repos\auth`. Press **Enter**. Every folder is added and saved
+   to `parameters.yaml`. A folder that does not exist is listed as "Not added".
+2. Press **D** to analyze all checked projects, or **P** for a quick read-only preflight.
+   **Space** checks or unchecks a project, and **X** removes it.
+3. When it finishes, **R** opens the selected project's report folder and **E** writes a
+   consolidated report for all of them.
+
+**F** is different: it asks for a parent folder and adds every repository it finds inside it,
+recognised by `.git`, `build.xml`, `pom.xml`, `build.gradle`, `.project` or `nbproject`.
+
+**From the command line**, either list the projects under `projects:` in `parameters.yaml` and run
+`anamnesis.exe analyze`, or pass the folders directly:
+
+```
+anamnesis.exe analyze C:\repos\billing C:\repos\orders C:\repos\auth
+```
 
 ## Run
 
