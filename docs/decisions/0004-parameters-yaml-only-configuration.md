@@ -1,7 +1,7 @@
 # ADR-0004: parameters.yaml is the only configuration source
 
 - Date: 2026-10-01
-- Status: accepted (operator decision)
+- Status: accepted (operator decision); amended 2026-10-01 (v0.1.2): the search order adds the per-user `%APPDATA%\Anamnesis\parameters.yaml`, and when no file exists anywhere a commented starter is written there with every side effect off
 
 ## Decision
 

@@ -44,13 +44,17 @@ other configuration flags and no environment variables. See parameters.example.y
 
 // LoadParams finds and loads parameters.yaml, with an error that names the file.
 func LoadParams(file string) (*config.Parameters, error) {
-	path, err := config.Find(file)
+	path, created, err := config.FindOrCreate(file)
 	if err != nil {
-		return nil, fmt.Errorf("%w\ncopy parameters.example.yaml to %s and edit it", err, config.FileName)
+		return nil, err
 	}
 	p, err := config.Load(path)
 	if err != nil {
-		return nil, fmt.Errorf("cannot use parameters file %s: %w\nsee parameters.example.yaml for the expected layout", path, err)
+		return nil, fmt.Errorf("cannot use parameters file %s: %w\nsee parameters.example.yaml in the repository for the expected layout", path, err)
+	}
+	p.Created = created
+	if created {
+		fmt.Fprintf(os.Stderr, "created a starter %s at %s\n(builds, MTA, network and installs are off; edit that file to enable them)\n", config.FileName, path)
 	}
 	return p, nil
 }

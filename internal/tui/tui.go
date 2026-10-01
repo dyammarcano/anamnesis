@@ -114,6 +114,9 @@ func keyOf(path string) string { return discovery.Key(filepath.Clean(path)) }
 func newModel(p *config.Parameters) *model_ {
 	m := &model_{params: p, state: map[string]*proj{}, events: make(chan tea.Msg, 1024), w: 110, h: 32}
 	m.msg = "Space enables/disables a project (saved to parameters.yaml). P preflight, D deep analysis."
+	if p.Created {
+		m.msg = "First run: created " + p.Path + ". Press A to add your project folders."
+	}
 	return m
 }
 

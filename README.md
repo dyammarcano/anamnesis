@@ -1,5 +1,5 @@
 # Anamnesis
-<!-- rev:006 (RFC 3339) 2026-10-01T19:08:19Z -->
+<!-- rev:007 (RFC 3339) 2026-10-01T19:39:46Z -->
 
 One Windows executable that assesses local legacy Java repositories (Ant, Maven, Gradle, Eclipse/NetBeans,
 hand-managed JARs) and writes an evidence-backed modernization report. Every conclusion carries the
@@ -33,12 +33,12 @@ Prebuilt binaries are published on the
 2. Verify the download. The hash must match the zip's line in `checksums.txt`:
 
    ```powershell
-   (Get-FileHash .\anamnesis_v0.1.1_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
+   (Get-FileHash .\anamnesis_v0.1.2_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
    ```
 
 3. Extract it. The zip contains `anamnesis.exe`, `parameters.example.yaml`, `README.md` and `LICENSE`.
-4. Copy `parameters.example.yaml` to `parameters.yaml` next to `anamnesis.exe` and edit it
-   (see [Configure](#configure)).
+4. Run `anamnesis.exe`. On first run it creates its `parameters.yaml` (see [Configure](#configure)).
+   You can also copy the included `parameters.example.yaml` to `parameters.yaml` next to the exe.
 
 Every release lists its changes on the Releases page. The version is printed by
 `anamnesis.exe version` and stamped into every `report.json`.
@@ -54,7 +54,7 @@ go install github.com/dyammarcano/anamnesis@latest
 To pin a release:
 
 ```
-go install github.com/dyammarcano/anamnesis@v0.1.1
+go install github.com/dyammarcano/anamnesis@v0.1.2
 ```
 
 The binary is installed as `anamnesis.exe` in `%USERPROFILE%\go\bin` (or `$GOBIN`); make sure that
@@ -73,8 +73,20 @@ The executable needs no Go toolchain to run.
 ## Configure
 
 Everything comes from `parameters.yaml`; Anamnesis reads no environment variables for configuration.
-Copy `parameters.example.yaml` to `parameters.yaml` (next to the exe or in the working directory)
-and set:
+
+**First run:** you do not need to create anything. When no `parameters.yaml` is found, Anamnesis
+writes a commented starter at `%APPDATA%\Anamnesis\parameters.yaml` and says so. Results then go to
+`%USERPROFILE%\Anamnesis\assessments`, and builds, MTA, network and installs stay off until you enable
+them in that file.
+
+The file is looked up in this order:
+
+1. `--parameters <file>`
+2. the working directory
+3. next to `anamnesis.exe`
+4. `%APPDATA%\Anamnesis\parameters.yaml`
+
+`parameters.example.yaml` in this repository documents every key. The main ones:
 
 - `output_dir`: where assessments go. It must be outside every analyzed project.
 - `projects`: repositories to assess. They are never modified.

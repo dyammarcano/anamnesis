@@ -200,3 +200,41 @@ func TestSaveRoundTrips(t *testing.T) {
 		t.Errorf("round trip changed the parameters: %+v", q)
 	}
 }
+
+// First run after `go install`: no parameters.yaml anywhere -> a valid starter is created in the
+// per-user directory and loads cleanly, with every side effect off.
+func TestFindOrCreateWritesLoadableStarter(t *testing.T) {
+	appData := t.TempDir()
+	t.Setenv("APPDATA", appData)         // os.UserConfigDir on Windows
+	t.Setenv("XDG_CONFIG_HOME", appData) // os.UserConfigDir elsewhere
+	t.Chdir(t.TempDir())                 // no parameters.yaml in the working directory
+
+	path, created, err := config.FindOrCreate("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !created || filepath.Dir(filepath.Dir(path)) != appData {
+		t.Fatalf("path=%s created=%v; want a new file under %s", path, created, appData)
+	}
+	p, err := config.Load(path)
+	if err != nil {
+		t.Fatalf("starter does not load: %v", err)
+	}
+	if p.OutputDir == "" || len(p.Projects) != 0 {
+		t.Fatalf("starter: output_dir=%q projects=%d", p.OutputDir, len(p.Projects))
+	}
+	if p.Build.Allow || p.MTA.Allow || p.Network.Allow || p.Environment.InstallMissing {
+		t.Fatal("starter enables a side effect; every side effect must be off by default")
+	}
+	// a second call finds the file and does not rewrite it
+	if _, created2, err := config.FindOrCreate(""); err != nil || created2 {
+		t.Fatalf("second call: created=%v err=%v; want found, not recreated", created2, err)
+	}
+}
+
+// An explicitly named file that does not exist is an error, never silently created.
+func TestFindOrCreateExplicitMissingIsError(t *testing.T) {
+	if _, _, err := config.FindOrCreate(filepath.Join(t.TempDir(), "nope.yaml")); err == nil {
+		t.Fatal("expected an error for a missing --parameters file")
+	}
+}

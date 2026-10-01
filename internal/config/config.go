@@ -85,6 +85,8 @@ type Parameters struct {
 	// Path is where the file was loaded from (absolute). Relative paths in the file resolve against
 	// its directory.
 	Path string `yaml:"-"`
+	// Created is true when this run wrote the file as a first-run starter (FindOrCreate).
+	Created bool `yaml:"-"`
 }
 
 // Find locates parameters.yaml: explicit path, else the working directory, else next to the
@@ -93,20 +95,127 @@ func Find(explicit string) (string, error) {
 	if explicit != "" {
 		return filepath.Abs(explicit)
 	}
-	var candidates []string
-	if wd, err := os.Getwd(); err == nil {
-		candidates = append(candidates, filepath.Join(wd, FileName))
-	}
-	if exe, err := os.Executable(); err == nil {
-		candidates = append(candidates, filepath.Join(filepath.Dir(exe), FileName))
-	}
+	candidates := candidatePaths()
 	for _, c := range candidates {
 		if _, err := os.Stat(c); err == nil {
 			return c, nil
 		}
 	}
-	return "", fmt.Errorf("%s not found (looked in: %s); create one from parameters.example.yaml", FileName, strings.Join(candidates, ", "))
+	return "", fmt.Errorf("%s not found (looked in: %s)", FileName, strings.Join(candidates, ", "))
 }
+
+// candidatePaths is the search order: working directory, next to the executable, then the per-user
+// location (UserPath). Locating the file uses the OS's standard per-user directory; no setting is
+// read from the environment.
+func candidatePaths() []string {
+	var c []string
+	if wd, err := os.Getwd(); err == nil {
+		c = append(c, filepath.Join(wd, FileName))
+	}
+	if exe, err := os.Executable(); err == nil {
+		c = append(c, filepath.Join(filepath.Dir(exe), FileName))
+	}
+	if u, err := UserPath(); err == nil {
+		c = append(c, u)
+	}
+	return c
+}
+
+// UserPath is the per-user parameters file: %APPDATA%\Anamnesis\parameters.yaml on Windows.
+func UserPath() (string, error) {
+	d, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(d, "Anamnesis", FileName), nil
+}
+
+// FindOrCreate finds parameters.yaml; when none exists anywhere in the search order (and none was
+// named explicitly) it writes a commented starter file at UserPath, so a first run — e.g. after
+// `go install`, where no example file sits next to the binary — works without manual setup.
+// The starter enables no side effects. created reports whether the file was just written.
+func FindOrCreate(explicit string) (path string, created bool, err error) {
+	if explicit != "" {
+		p, err := filepath.Abs(explicit)
+		if err != nil {
+			return "", false, err
+		}
+		if _, err := os.Stat(p); err != nil {
+			return "", false, fmt.Errorf("parameters file %s: %w", p, err)
+		}
+		return p, false, nil
+	}
+	if p, err := Find(""); err == nil {
+		return p, false, nil
+	}
+	up, err := UserPath()
+	if err != nil {
+		return "", false, fmt.Errorf("%s not found and no per-user directory is available: %w", FileName, err)
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", false, err
+	}
+	if err := os.MkdirAll(filepath.Dir(up), 0o755); err != nil {
+		return "", false, err
+	}
+	body := strings.ReplaceAll(starterTemplate, "{{OUTPUT_DIR}}", filepath.Join(home, "Anamnesis", "assessments"))
+	if err := os.WriteFile(up, []byte(body), 0o644); err != nil {
+		return "", false, err
+	}
+	return up, true, nil
+}
+
+// starterTemplate is written on first run. It must stay valid for Load (KnownFields is strict).
+const starterTemplate = `# Anamnesis parameters - the only configuration source (no environment variables).
+# Created automatically on first run. Edit freely; relative paths resolve against this file's folder.
+
+# Where assessments are written. Must be outside every analyzed project.
+output_dir: {{OUTPUT_DIR}}
+
+# Repositories to assess (never modified). Add them here or press A in the TUI.
+projects: []
+
+# Parent folders the TUI (key F) and "anamnesis discover" scan for repositories.
+discover_roots: []
+
+# Missing global tools (ant, mvn, gradle, gh) and a JDK matching the project's declared Java target
+# can be installed with scoop after preflight has recorded the environment as found.
+environment:
+  install_missing: false
+  install_jdks: false
+  restore_user_env: true
+  scoop_buckets: [main, java]
+
+# JDKs available on this machine, used where a section below names one.
+jdks: []
+
+# Local build experiment: runs the project's build in a staged copy, never in the repository.
+build:
+  allow: false
+  jdk: ""
+  timeout_minutes: 20
+
+# MTA (Migration Toolkit for Applications): set install_dir to an extracted MTA distribution.
+mta:
+  allow: false
+  install_dir: ""
+  executable: ""
+  jdk: ""
+  targets: [openjdk17, eap8, jakarta-ee]
+  mode: source-only
+  timeout_minutes: 60
+  force_when_predicted_to_fail: false
+  jvm_max_mem: ""
+
+# Read-only GitHub queries through gh (same-commit CI evidence).
+network:
+  allow: false
+
+analysis:
+  concurrency: 4
+  analyzer_timeout_minutes: 30
+`
 
 // Load reads and validates the file and applies defaults.
 func Load(path string) (*Parameters, error) {
