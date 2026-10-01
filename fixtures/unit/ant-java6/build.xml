@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<project name="ant-java6" default="compile" basedir=".">
+  <import file="build-properties.xml"/>
+  <target name="compile" description="compile the sources">
+    <mkdir dir="${build.dir}/classes"/>
+    <javac srcdir="src" destdir="${build.dir}/classes" target="${java.target.version}"/>
+  </target>
+  <target name="dist" depends="compile">
+    <jar destfile="${build.dir}/app.jar" basedir="${build.dir}/classes"/>
+  </target>
+</project>

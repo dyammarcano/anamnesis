@@ -1,0 +1,58 @@
+# Anamnesis parameters — the ONLY configuration source. Anamnesis reads no environment
+# variables for configuration. Relative paths resolve against this file's directory.
+# Copy to parameters.yaml (next to anamnesis.exe or in the working directory) and edit.
+
+# Where assessments are written. Must be outside every analyzed project.
+output_dir: C:\Anamnesis\assessments
+
+# Repositories to assess. Anamnesis never modifies them.
+projects:
+  - path: C:\repos\my-legacy-app
+    name: my-legacy-app      # optional; defaults to the folder name
+    enabled: true            # optional; defaults to true
+
+# Parent folders the TUI/`discover` scans for candidate repositories.
+discover_roots: []
+
+
+# Tools (git, ant, mvn, gradle, gh, ...) are global, resolved from PATH. When one is missing,
+# Anamnesis installs it with scoop after preflight has recorded the environment as found.
+# install_jdks also installs a JDK able to compile the project's declared Java target
+# (note: scoop JDK packages change the user-level JAVA_HOME; Anamnesis reports before/after).
+environment:
+  install_missing: true
+  install_jdks: true
+  restore_user_env: true
+  scoop_buckets: [main, java]
+
+# JDKs available on this machine, used where a section below names one. A JDK installed by
+# environment preparation is added for the run automatically (this file is not rewritten).
+jdks:
+  - name: jdk21
+    home: C:\Java\jdk-21
+
+# Local build experiment: runs the project's build in a staged copy under output_dir.
+build:
+  allow: false               # side effect — must be enabled explicitly
+  jdk: ""                    # a jdks[].name to use as JAVA_HOME; empty → not set
+  timeout_minutes: 20
+
+# MTA (Migration Toolkit for Applications) — used if installed; its failure never stops Anamnesis.
+mta:
+  allow: false               # side effect — MTA may run the project's mvn/gradlew
+  install_dir: ""            # extracted MTA distribution (contains rulesets/, jdtls/, static-report/)
+  executable: ""             # optional; default: windows-mta-cli.exe / mta-cli / kantra in install_dir
+  jdk: ""                    # a jdks[].name with Java 17+, passed to MTA as JAVA_HOME
+  targets: [openjdk17, eap8, jakarta-ee]
+  mode: source-only          # source-only | full
+  timeout_minutes: 60
+  force_when_predicted_to_fail: false
+  jvm_max_mem: ""            # e.g. 4g
+
+# Read-only GitHub queries through gh (same-SHA CI evidence).
+network:
+  allow: false
+
+analysis:
+  concurrency: 4
+  analyzer_timeout_minutes: 30

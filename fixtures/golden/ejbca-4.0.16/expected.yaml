@@ -1,0 +1,124 @@
+# Golden Legacy #1 - EJBCA Community 4.0.16 - semantic invariants.
+#
+# Each invariant is derived from ground truth recorded in docs/validation/ejbca-4.0.16.md (G-n).
+# These are semantics, not a snapshot: wording and field layout of Anamnesis's report may change, but
+# these facts must hold. `stage` says which Anamnesis capability must exist before the invariant is
+# enforced; until then the acceptance test reports it as PENDING, never as passing.
+#
+# The fixture itself lives outside the repo (see the validation doc). The acceptance run takes its
+# location from the projects list in parameters.yaml (Anamnesis uses no environment variables) and
+# reports SKIPPED (not passed) when the fixture is not configured or not present.
+
+fixture:
+  id: ejbca-4.0.16
+  archive_sha1: 4b33957e61d330fe1bcf1d17508fe3243d373e72
+  tree_sha256: 035e26fdd9add60389c8bb9f5ca80e4dd67f3e6b9049d6bdf75f7a20587e1c7d
+
+invariants:
+  - id: repo.untouched
+    stage: discovery
+    claim: the analyzed tree digest is identical before and after every Anamnesis run
+    from: [docs/validation/ejbca-4.0.16.md#provenance]
+
+  - id: repo.no-vcs
+    stage: discovery
+    claim: git status is reported as "not a git repository", and the enclosing directories are NOT attributed as this project's repository
+    from: [G-1]
+
+  - id: project.language
+    stage: discovery
+    claim: Java source detected
+    expect: {language_contains: java, java_files_at_least: 1500}
+    from: [G-13]
+
+  - id: build.system
+    stage: discovery
+    claim: Ant detected from build.xml at the root; Maven and Gradle NOT detected
+    expect: {systems_contains: ant, systems_excludes: [maven, gradle]}
+    evidence_location: build.xml
+    from: [G-2, G-3]
+
+  - id: build.ide-metadata
+    stage: discovery
+    claim: NetBeans project metadata detected in modules/batchenrollment-gui
+    from: [G-4]
+
+  - id: java.target-version
+    stage: java-version
+    claim: target compatibility 1.6 reported, with evidence at modules/build-properties.xml:97, reached through an import of root build.xml
+    expect: {target_version: "1.6", confidence_at_least: DERIVED}
+    evidence_location: modules/build-properties.xml:97
+    from: [G-5, G-7]
+
+  - id: java.source-version-mostly-implicit
+    stage: java-version
+    claim: Anamnesis does not report a single explicit source level for the whole project; most javac tasks have none
+    from: [G-6]
+
+  - id: java.not-modern
+    stage: java-version
+    claim: the locally installed JDK (21 on the dev machine) is reported as LOCAL RUNTIME only and never as the project's Java version
+    expect: {project_java_generation_at_most: "1.6"}
+    from: [G-5, G-14]
+
+  - id: java.class-majors
+    stage: java-version
+    claim: bundled JAR class-file majors reported, maximum 50 (Java 6)
+    expect: {jar_class_major_max: 50}
+    from: [G-14]
+
+  - id: enterprise.java-ee
+    stage: discovery
+    claim: Java EE characteristics detected (EAR target, WAR modules, JSP)
+    expect: {java_ee_detected: true}
+    from: [G-13]
+
+  - id: enterprise.appserver-coupling
+    stage: discovery
+    claim: application-server coupling detected, naming at least JBoss among the supported servers
+    expect: {appservers_contains: jboss}
+    from: [G-8, G-9, G-12]
+
+  - id: ant.dynamic-import
+    stage: ant-safety
+    claim: the import bin/${appserver.type}.xml is reported as unresolved/property-dependent rather than silently dropped
+    from: [G-8]
+
+  - id: ant.deploy-not-safe
+    stage: ant-safety
+    claim: deploy and install are classified DANGEROUS or REVIEW_REQUIRED and never auto-executed
+    expect: {targets: {deploy: [DANGEROUS, REVIEW_REQUIRED], install: [DANGEROUS, REVIEW_REQUIRED]}, auto_executed: false}
+    from: [G-11, G-12]
+
+  - id: ant.default-not-trusted-by-name
+    stage: ant-safety
+    claim: the default target "build" is classified from its transitive graph, which reaches app-server detection; its name is not evidence
+    from: [G-10]
+
+  - id: buildability.semantics
+    stage: build
+    claim: local build failure, non-attempt, or a build of only an auxiliary target yields source buildability NOT DISPROVEN and environment reproducibility FAILED/INCOMPLETE/NOT_ATTEMPTED/PARTIAL; never "source not buildable" and never "locally buildable"
+    expect: {source_buildability: NOT_DISPROVEN, local_reproducibility: [FAILED, INCOMPLETE, NOT_ATTEMPTED, PARTIAL], state_not: [LOCALLY_BUILDABLE]}
+    # PARTIAL added from observed evidence (run 20261001T174728Z): with Ant + JDK 8 prepared, the only
+    # SAFE javac target is the auxiliary doc-build-tool; the default target "build" is DANGEROUS.
+    from: [G-10]
+
+  - id: buildability.missing-tools
+    stage: build
+    claim: in the environment AS FOUND, ant is reported MISSING with a scoop install suggestion and preflight installs nothing; installation happens only in the prepare step and is recorded as env.install evidence (ADR-0005)
+    from: [docs/development-environment.md, docs/decisions/0005-global-tools-scoop-install.md]
+
+  - id: migration.mta-predicted
+    stage: migration
+    claim: MTA's Java provider is predicted NOT APPLICABLE before running, citing no pom.xml/build.gradle (unable to get build tool)
+    from: [G-3]
+
+  - id: migration.survives-failure
+    stage: migration
+    claim: an MTA failure is preserved as FAILED evidence and the assessment continues
+    expect: {report_generated: true}
+
+  - id: report.always
+    stage: report
+    claim: the two reports, report.json and report.html, are generated even though the build cannot run
+    expect: {files: [report.json, report.html]}

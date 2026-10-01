@@ -1,0 +1,6 @@
+.scripts/
+vendor-ref/
+/anamnesis.exe
+/project-doctor.exe
+build/
+parameters.yaml
