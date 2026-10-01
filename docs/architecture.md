@@ -1,5 +1,5 @@
 # Anamnesis — architecture
-<!-- rev:005 (RFC 3339) 2026-10-01T18:33:16Z -->
+<!-- rev:006 (RFC 3339) 2026-10-01T20:20:26Z -->
 
 Anamnesis is one Go executable (`anamnesis.exe`) that assesses local legacy Java
 repositories and writes a defensible modernization report. It runs as a TUI with no arguments and
@@ -136,7 +136,8 @@ inside a Job Object with a timeout; stdout/stderr and `analysis.log` kept as art
 recorded as evidence whatever the outcome:
 1. binary route on a **copy** of an existing WAR/EAR/JAR, never the in-repo file;
 2. staged-copy route: copy sources to the run dir, generate a minimal `pom.xml`, analyze the copy, map
-   incident URIs back to repo paths (hypothesis H-1, to validate on a fixture first);
+   incident URIs back to repo paths (H-1, implemented and validated on EJBCA 4.0.16; the default route
+   for projects without Maven/Gradle, `mta.disable_synthetic_pom` turns it off);
 3. otherwise MTA is reported `NOT_APPLICABLE` with the exact predicted error, and the native
    technology/descriptor analyzers carry the migration evidence.
 
@@ -190,9 +191,9 @@ UTC start time `20261001T164228Z`. Anamnesis refuses an output root inside any p
 |---|---|---|---|
 | OQ-1 | Licence of the default rulesets and of the MTA distribution contents | decides whether any rule content may ever be embedded | operator, or the upstream repositories |
 | OQ-2 | The static report's effort aggregation formula | whether Anamnesis's derived totals match MTA's UI | read the static-report bundle in the distribution |
-| OQ-3 | Does JDT LS (as shipped in 8.3.0) parse Java 6/7 source at its declared level? | accuracy of the staged-copy route on Java 6-era code | experiment on a Java 6 fixture in Wave 5 |
+| OQ-3 | Does JDT LS (as shipped in 8.3.0) parse Java 6/7 source at its declared level? | accuracy of the staged-copy route on Java 6-era code | partly answered: the synthetic POM declares 1.8 (JDT rejects lower levels); EJBCA's Java 5/6 source produced 4,454 incidents. Per-incident accuracy has not been audited |
 | OQ-4 | Does kantra run `mvn dependency:tree` even with `--mode source-only` (it always calls `GetDependencies`, K:cmd/analyze/run.go:304)? | whether MTA on a Maven repo executes repo build config in every mode | read `A:core` GetDependencies path in Wave 5 |
 | OQ-5 | Precedence between a repo-carried `.konveyor/profiles` profile and explicit CLI flags | whether an untrusted repo can override Anamnesis's flags | read `K:pkg/profile/profile.go` in Wave 5 |
 | OQ-6 | Go module path / remote for this repository | `go.mod` | operator; Wave 1 uses a local path that can be renamed |
 | OQ-7 | Where the operator's private target repositories are | final acceptance; public stand-in is EJBCA 4.0.16 (`docs/validation/ejbca-4.0.16.md`), which is the Wave 2 done-signal input | operator |
-| H-1 | Hypothesis: a staged copy plus a synthetic `pom.xml` lets MTA's Java provider analyze an Ant repository | the main route to Java-rule evidence for Ant projects | fixture experiment, Wave 5 |
+| H-1 | ~~Hypothesis~~ Confirmed: a staged copy plus a synthetic `pom.xml` lets MTA's Java provider analyze an Ant repository | the main route to Java-rule evidence for Ant projects | confirmed 2026-10-01 on EJBCA 4.0.16 (see docs/validation/ejbca-4.0.16.md) |

@@ -1,5 +1,5 @@
 # Golden Legacy #1 — EJBCA Community Edition 4.0.16
-<!-- rev:003 (RFC 3339) 2026-10-01T18:33:16Z -->
+<!-- rev:004 (RFC 3339) 2026-10-01T20:20:26Z -->
 
 EJBCA is **test input**. Anamnesis is the system under test. EJBCA is never modified, fixed or
 modernized, and production code contains no EJBCA-specific behaviour.
@@ -135,3 +135,22 @@ blanks and comments), 73 `.jar`, 0 `.war`, 0 `.ear`.
 | ↳ jdeps | 7.9 s | |
 | report generation | under 1 s (not separately timed) | |
 | peak memory | not measured | |
+
+## MTA through the synthetic-POM route (2026-10-01)
+
+With `mta.allow: true` and the default synthetic-POM route, MTA 8.3.0 analysed a staged copy of EJBCA
+that had a generated `pom.xml`:
+
+- **Run:** `mta.run` SUCCEEDED (route `synthetic-pom`, 468 s); 1,548 `.java` files relocated, 0 collisions,
+  73 jars as system dependencies; targets `cloud-readiness, eap8, jakarta-ee, openjdk17`.
+- **Results:** 40 violated rules, 4,454 incidents, **6,376 MTA effort points** (effort × incidents), 73
+  insights, 0 rule errors. Every incident location is a repository path.
+- **Largest contributors:** `javax-to-jakarta-import-00001` (1 × 2,295), `oracle2openjdk-00006` (3 × 533),
+  `localhost-http-00001` (7 × 90, e.g. `bin/glassfish.xml:83`), `log4j-removed-00002` (1 × 456),
+  `local-storage-00001` (1 × 308).
+- **Repository:** the EJBCA tree digest was unchanged (`035e26fd…`).
+- **Limitations:**
+  - The synthetic POM declares Java 1.8, because JDT rejects lower compliance levels.
+  - Classes provided at runtime by the application server or the original build classpath are
+    unresolved.
+  - Per-incident accuracy has not been audited.

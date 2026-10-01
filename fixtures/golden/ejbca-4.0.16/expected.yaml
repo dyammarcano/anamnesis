@@ -122,3 +122,9 @@ invariants:
     stage: report
     claim: the two reports, report.json and report.html, are generated even though the build cannot run
     expect: {files: [report.json, report.html]}
+
+  - id: migration.synthetic-pom
+    stage: migration
+    claim: with MTA allowed, a project without Maven/Gradle is analysed through a staged copy with a generated pom.xml; MTA succeeds, findings carry effort, every incident maps to a repository path, and the repository is untouched
+    expect: {mta_route: synthetic-pom, mta_state: SUCCEEDED, violations_at_least: 1, location_space: repo}
+    # observed 2026-10-01: 40 rules, 4,454 incidents, 6,376 effort points (docs/validation/ejbca-4.0.16.md)

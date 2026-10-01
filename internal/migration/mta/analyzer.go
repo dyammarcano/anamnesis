@@ -33,6 +33,7 @@ const (
 	RouteSource       = "source"
 	RouteBinary       = "binary"
 	RouteSourceForced = "source-forced" // run although the failure was predicted, by parameter
+	RouteSyntheticPOM = "synthetic-pom" // staged copy reshaped with a generated pom.xml (no Maven/Gradle build)
 )
 
 const (
@@ -128,6 +129,10 @@ func (a analyzer) Analyze(ctx context.Context, p *engine.Project, sink engine.Si
 	switch {
 	case applicable:
 		r.route, input = RouteSource, p.Root
+	case !cfg.DisableSyntheticPOM && p.Files.JavaFiles > 0:
+		// No pom.xml/build.gradle: reshape a staged copy so the Java provider can start (H-1).
+		r.route = RouteSyntheticPOM
+		r.values["java_provider"] = "APPLICABLE_WITH_SYNTHETIC_POM"
 	default:
 		if arch, ok := pickArchive(p); ok {
 			copied, err := copyArchive(p, arch.Rel)
@@ -160,7 +165,8 @@ func (a analyzer) Analyze(ctx context.Context, p *engine.Project, sink engine.Si
 	// Source routes never hand the analyzed repository to MTA: its Java provider runs mvn or the
 	// project's gradlew inside the input, and the analyzer writes under it. Analyze a staged copy.
 	var stagedDir string
-	if r.route == RouteSource || r.route == RouteSourceForced {
+	var relocated map[string]string
+	if r.route == RouteSource || r.route == RouteSourceForced || r.route == RouteSyntheticPOM {
 		stagedDir = filepath.Join(p.RunDir, "mta-src", p.Name)
 		if err := buildrun.Stage(ctx, p.Root, stagedDir); err != nil {
 			r.state, r.class = StateNotRun, FailUnknown
@@ -172,6 +178,36 @@ func (a analyzer) Analyze(ctx context.Context, p *engine.Project, sink engine.Si
 		r.values["staged_copy"] = filepath.ToSlash(filepath.Join("mta-src", p.Name))
 		r.assumptions = append(r.assumptions,
 			"MTA analysed a staged copy of the repository (VCS metadata excluded) so build tools it runs cannot modify the repository; incident paths are mapped back to repository paths")
+		if r.route == RouteSyntheticPOM {
+			rel, info, err := synthesizePOM(ctx, p, stagedDir)
+			if err != nil {
+				r.state, r.class = StateNotRun, FailUnknown
+				r.finding = "MTA was not run: the synthetic-POM copy could not be prepared: " + err.Error()
+				emitRun(emit, r)
+				return nil
+			}
+			relocated = rel
+			r.values["synthetic_pom"] = "pom.xml generated in the staged copy (see artifacts)"
+			r.values["java_files"] = strconv.Itoa(info.JavaFiles)
+			r.values["java_files_relocated"] = strconv.Itoa(info.Moved)
+			r.values["java_collisions"] = strconv.Itoa(info.Collisions)
+			r.values["source_roots"] = strings.Join(limitStrings(info.Roots, 20), ",")
+			r.values["system_jars"] = strconv.Itoa(info.Jars)
+			r.values["synthetic_source_level"] = SyntheticSourceLevel
+			r.assumptions = append(r.assumptions,
+				"no Maven/Gradle build exists, so MTA ran on a staged copy reshaped with a generated pom.xml: .java files moved to src/main/java by package, project jars declared as system dependencies",
+				"the synthetic pom declares Java "+SyntheticSourceLevel+" because JDT no longer accepts lower compliance levels; Java 5-7 source parses as Java 8",
+				"results reflect the code MTA could resolve with the project's own jars; classes from the application server or the original build classpath are unresolved")
+			if info.Collisions > 0 {
+				r.limitations = append(r.limitations, fmt.Sprintf("%d .java file(s) duplicate a package+class already placed and were not analysed as Java (builtin rules still see them)", info.Collisions))
+			}
+			if b, err := os.ReadFile(filepath.Join(stagedDir, "pom.xml")); err == nil {
+				capDir := p.CapabilityDir("mta")
+				if os.MkdirAll(capDir, 0o755) == nil && os.WriteFile(filepath.Join(capDir, "synthetic-pom.xml"), b, 0o644) == nil {
+					r.artifacts = append(r.artifacts, filepath.ToSlash(filepath.Join("capabilities", "mta", "synthetic-pom.xml")))
+				}
+			}
+		}
 	}
 
 	targets := cfg.Targets
@@ -272,6 +308,7 @@ func (a analyzer) Analyze(ctx context.Context, p *engine.Project, sink engine.Si
 	mapper := newPathMapper(p)
 	if stagedDir != "" {
 		mapper.staged = strings.TrimRight(filepath.ToSlash(stagedDir), "/")
+		mapper.relocated = relocated
 	}
 	results, stats := emitResults(emit, rulesets, mapper)
 	rep := Aggregate(results)
@@ -550,7 +587,8 @@ const (
 
 type pathMapper struct {
 	repo, runDir string
-	staged       string // staged copy of the repository analysed by MTA; maps back to repo paths
+	staged       string            // staged copy of the repository analysed by MTA; maps back to repo paths
+	relocated    map[string]string // synthetic-POM route: staged path -> original repo path
 	fold         bool
 }
 
@@ -584,6 +622,9 @@ func (m pathMapper) mapURI(uri string) (p, space string) {
 	raw = path.Clean(raw)
 	if m.staged != "" {
 		if rel, ok := m.cut(raw, m.staged); ok {
+			if orig, moved := m.relocated[rel]; moved {
+				return orig, spaceRepo
+			}
 			return rel, spaceRepo
 		}
 	}

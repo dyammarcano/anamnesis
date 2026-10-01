@@ -59,6 +59,9 @@ type MTA struct {
 	TimeoutMinutes           int      `yaml:"timeout_minutes"`
 	ForceWhenPredictedToFail bool     `yaml:"force_when_predicted_to_fail"`
 	JvmMaxMem                string   `yaml:"jvm_max_mem"` // passed to MTA explicitly, e.g. "4g"
+	// DisableSyntheticPOM turns off the route that lets MTA analyse projects without Maven/Gradle
+	// (Ant, Eclipse, hand-built) through a staged copy with a generated pom.xml. Default: route on.
+	DisableSyntheticPOM bool `yaml:"disable_synthetic_pom"`
 }
 
 type Network struct {
@@ -206,6 +209,8 @@ mta:
   mode: source-only
   timeout_minutes: 60
   force_when_predicted_to_fail: false
+  # Projects without Maven/Gradle (Ant, Eclipse) are analysed through a staged copy with a generated pom.xml.
+  disable_synthetic_pom: false
   jvm_max_mem: ""
 
 # Read-only GitHub queries through gh (same-commit CI evidence).

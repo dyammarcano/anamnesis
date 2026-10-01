@@ -1,5 +1,5 @@
 # MTA / Kantra 8.3.0 internals
-<!-- rev:004 (RFC 3339) 2026-10-01T18:33:16Z -->
+<!-- rev:005 (RFC 3339) 2026-10-01T20:20:26Z -->
 
 Source-level analysis of the MTA CLI (kantra) 8.3.0 and the analyzer-lsp commit it pins, done to
 decide what Anamnesis reuses, wraps or reimplements. Every claim cites `file:line` in the
@@ -8,6 +8,19 @@ reference trees:
 - `K:` = `vendor-ref/mta-cli/` (kantra, module `github.com/konveyor-ecosystem/kantra`)
 - `A:` = `vendor-ref/analyzer-lsp/` at `861e51620602`
 - `J:` = `A:external-providers/java-external-provider/pkg/java_external_provider/`
+
+**Version caveat (observed 2026-10-01 with `go version -m` and `unravel pe info` on the 8.3.0 Windows
+distribution).** Both executables are Go programs built with go1.26.7 (Red Hat). They were built from
+different analyzer-lsp versions:
+
+- `windows-mta-cli.exe` (kantra) embeds analyzer-lsp `861e51620602` (the `A:` tree below) and
+  `BuildCommit=ee82eac9…`.
+- `java-external-provider.exe` was built from analyzer-lsp `v0.10.0-alpha.2.0.20260611082435-fa39c059f102`
+  (June 2026, CGO on, strict FIPS runtime).
+
+The `J:` line numbers therefore describe an older provider than the one shipped. The behaviour that
+matters was re-observed on the shipped binaries: Ant/Eclipse inputs fail with
+`failed to start providers: unable to initialize providers: unable to init: unable to get build tool`.
 
 `vendor-ref/` is not part of this repository; it is excluded on purpose. To reproduce the citations,
 use the MTA 8.3.0 CLI source archive (`mta-8.3.0-cli-src.zip`, kantra) and
@@ -237,7 +250,7 @@ produced, so some builtin rules lose recall too.
 | Route | Mechanism | Status |
 |---|---|---|
 | Binary input | pass an existing `.war/.ear/.jar` built from the repo; `mavenBinaryBuildTool` decompiles it with fernflower | plausible; writes a `java-project/` dir **next to the input file** (J:dependency/binary_resolver.go:50), so the archive must be copied out of the repo first |
-| Staged copy + synthetic `pom.xml` | Anamnesis copies sources into its own run dir and generates a minimal POM (source dirs, local JARs as `system` deps) so `GetBuildTool` finds Maven | hypothesis — JDT LS behaviour on Java 6-era source untested |
+| Staged copy + synthetic `pom.xml` | Anamnesis copies the project into its run dir, moves `.java` files to `src/main/java/<package>`, declares the project's jars as `system` dependencies and writes a minimal POM (Java 1.8 level) so `GetBuildTool` finds Maven | **validated 2026-10-01** on EJBCA 4.0.16: MTA SUCCEEDED, 40 rules / 4,454 incidents / 6,376 effort points, all incidents mapped back to repository paths, repository untouched (`internal/migration/mta/synthpom.go`) |
 | Builtin-only | not offered by kantra 8.3.0 (§3.6); would need analyzer-lsp embedded or a different binary | rejected for now (dependency weight, §10) |
 | Hybrid/container | same Java provider code → same failure | does not help |
 

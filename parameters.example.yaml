@@ -47,6 +47,7 @@ mta:
   mode: source-only          # source-only | full
   timeout_minutes: 60
   force_when_predicted_to_fail: false
+  disable_synthetic_pom: false     # Ant/Eclipse projects: analyse a staged copy with a generated pom.xml
   jvm_max_mem: ""            # e.g. 4g
 
 # Read-only GitHub queries through gh (same-SHA CI evidence).

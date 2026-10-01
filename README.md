@@ -1,5 +1,5 @@
 # Anamnesis
-<!-- rev:007 (RFC 3339) 2026-10-01T19:39:46Z -->
+<!-- rev:008 (RFC 3339) 2026-10-01T20:20:37Z -->
 
 One Windows executable that assesses local legacy Java repositories (Ant, Maven, Gradle, Eclipse/NetBeans,
 hand-managed JARs) and writes an evidence-backed modernization report. Every conclusion carries the
@@ -33,7 +33,7 @@ Prebuilt binaries are published on the
 2. Verify the download. The hash must match the zip's line in `checksums.txt`:
 
    ```powershell
-   (Get-FileHash .\anamnesis_v0.1.2_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
+   (Get-FileHash .\anamnesis_v0.1.3_windows_amd64.zip -Algorithm SHA256).Hash.ToLower()
    ```
 
 3. Extract it. The zip contains `anamnesis.exe`, `parameters.example.yaml`, `README.md` and `LICENSE`.
@@ -54,7 +54,7 @@ go install github.com/dyammarcano/anamnesis@latest
 To pin a release:
 
 ```
-go install github.com/dyammarcano/anamnesis@v0.1.2
+go install github.com/dyammarcano/anamnesis@v0.1.3
 ```
 
 The binary is installed as `anamnesis.exe` in `%USERPROFILE%\go\bin` (or `$GOBIN`); make sure that
@@ -95,6 +95,9 @@ The file is looked up in this order:
 - `build.allow`, `mta.allow`, `network.allow`: side effects. All are off unless enabled.
   Builds and MTA always run on a staged copy, never in the repository.
 - `mta.install_dir`: an extracted MTA distribution (contains `rulesets/`, `jdtls/`, `static-report/`).
+  MTA cannot analyse projects without Maven/Gradle (Ant, Eclipse, hand-built) and fails with "unable to
+  get build tool". Anamnesis handles this by giving MTA a staged copy with a generated `pom.xml`, and
+  incidents are reported against your real file paths. `mta.disable_synthetic_pom: true` turns this off.
 
 ## Assess several projects
 

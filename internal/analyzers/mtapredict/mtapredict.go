@@ -81,7 +81,13 @@ func predict(p *engine.Project, sink engine.Sink) {
 		}
 		vals["java_provider"], vals["reason"], vals["expected_error"] = "NOT_APPLICABLE", reason, kantraError
 		ev.Status = model.Warn
-		ev.Finding = "The MTA Java provider is predicted to fail with \"" + kantraError + "\" because there is " + reason + "."
+		ev.Finding = "On the repository as it is, the MTA Java provider is predicted to fail with \"" + kantraError + "\" because there is " + reason + "."
+		if p.Params == nil || !p.Params.MTA.DisableSyntheticPOM {
+			if p.Files.JavaFiles > 0 {
+				vals["anamnesis_route"] = "synthetic-pom"
+				ev.Finding += " Anamnesis avoids this by giving MTA a staged copy with a generated pom.xml (synthetic-pom route)."
+			}
+		}
 		ev.Limitations = append(ev.Limitations, "Only the project root is examined by the provider; a pom.xml in a subdirectory does not help.")
 	}
 	sink.Emit(ev)
